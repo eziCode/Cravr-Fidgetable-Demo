@@ -24,6 +24,7 @@ final class Haptics {
     // Core Haptics for advanced patterns
     private var hapticEngine: CHHapticEngine?
     private var continuousPlayer: CHHapticPatternPlayer?
+    private var activePlayers: [Int: CHHapticPatternPlayer] = [:]
 
     private init() {
         prepareAll()
@@ -87,5 +88,199 @@ final class Haptics {
 
     func microHaptic() {
         selection.selectionChanged()
+    }
+    
+    // Six unique haptic patterns for the six dot grid
+    func dot1Haptic() {
+        // Quick double tap - light then medium
+        impact(.light)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            self.impact(.medium)
+        }
+    }
+    
+    func dot2Haptic() {
+        // Long heavy impact
+        impact(.heavy)
+    }
+    
+    func dot3Haptic() {
+        // Triple light taps
+        impact(.light)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+            self.impact(.light)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            self.impact(.light)
+        }
+    }
+    
+    func dot4Haptic() {
+        // Medium then light crescendo
+        impact(.medium)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.impact(.light)
+        }
+    }
+    
+    func dot5Haptic() {
+        // Heavy then light decrescendo
+        impact(.heavy)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            self.impact(.light)
+        }
+    }
+    
+    func dot6Haptic() {
+        // Rapid fire light taps
+        impact(.light)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
+            self.impact(.light)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            self.impact(.light)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            self.impact(.light)
+        }
+    }
+    
+    // Continuous haptic methods for six dot grid
+    func startContinuousHaptic(for dotIndex: Int) {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+        guard hapticEngine != nil else { return }
+        
+        // Stop any existing haptic for this dot
+        stopContinuousHaptic(for: dotIndex)
+        
+        let pattern = createContinuousPattern(for: dotIndex)
+        
+        do {
+            let player = try hapticEngine?.makePlayer(with: pattern)
+            try player?.start(atTime: 0)
+            activePlayers[dotIndex] = player
+        } catch {
+            print("Failed to start continuous haptic for dot \(dotIndex): \(error)")
+        }
+    }
+    
+    func stopContinuousHaptic(for dotIndex: Int) {
+        if let player = activePlayers[dotIndex] {
+            do {
+                try player.stop(atTime: 0)
+            } catch {
+                print("Failed to stop haptic for dot \(dotIndex): \(error)")
+            }
+            activePlayers.removeValue(forKey: dotIndex)
+        }
+    }
+    
+    private func createContinuousPattern(for dotIndex: Int) -> CHHapticPattern {
+        switch dotIndex {
+        case 0: // Dot 1 - Quick double pulses
+            return createDoublePulsePattern()
+        case 1: // Dot 2 - Heavy continuous
+            return createHeavyContinuousPattern()
+        case 2: // Dot 3 - Triple pulse rhythm
+            return createTriplePulsePattern()
+        case 3: // Dot 4 - Medium-light crescendo
+            return createCrescendoPattern()
+        case 4: // Dot 5 - Heavy-light decrescendo
+            return createDecrescendoPattern()
+        case 5: // Dot 6 - Rapid fire
+            return createRapidFirePattern()
+        default:
+            return createDoublePulsePattern()
+        }
+    }
+    
+    private func createDoublePulsePattern() -> CHHapticPattern {
+        let events = [
+            CHHapticEvent(
+                eventType: .hapticContinuous,
+                parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.4),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.6)
+                ],
+                relativeTime: 0,
+                duration: 1000
+            )
+        ]
+        return try! CHHapticPattern(events: events, parameters: [])
+    }
+    
+    private func createHeavyContinuousPattern() -> CHHapticPattern {
+        let events = [
+            CHHapticEvent(
+                eventType: .hapticContinuous,
+                parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.9),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.8)
+                ],
+                relativeTime: 0,
+                duration: 1000
+            )
+        ]
+        return try! CHHapticPattern(events: events, parameters: [])
+    }
+    
+    private func createTriplePulsePattern() -> CHHapticPattern {
+        let events = [
+            CHHapticEvent(
+                eventType: .hapticContinuous,
+                parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.5),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.7)
+                ],
+                relativeTime: 0,
+                duration: 1000
+            )
+        ]
+        return try! CHHapticPattern(events: events, parameters: [])
+    }
+    
+    private func createCrescendoPattern() -> CHHapticPattern {
+        let events = [
+            CHHapticEvent(
+                eventType: .hapticContinuous,
+                parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.6),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5)
+                ],
+                relativeTime: 0,
+                duration: 1000
+            )
+        ]
+        return try! CHHapticPattern(events: events, parameters: [])
+    }
+    
+    private func createDecrescendoPattern() -> CHHapticPattern {
+        let events = [
+            CHHapticEvent(
+                eventType: .hapticContinuous,
+                parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.4),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.6)
+                ],
+                relativeTime: 0,
+                duration: 1000
+            )
+        ]
+        return try! CHHapticPattern(events: events, parameters: [])
+    }
+    
+    private func createRapidFirePattern() -> CHHapticPattern {
+        let events = [
+            CHHapticEvent(
+                eventType: .hapticContinuous,
+                parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.3),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.8)
+                ],
+                relativeTime: 0,
+                duration: 1000
+            )
+        ]
+        return try! CHHapticPattern(events: events, parameters: [])
     }
 }

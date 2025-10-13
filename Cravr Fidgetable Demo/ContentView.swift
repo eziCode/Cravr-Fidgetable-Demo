@@ -21,6 +21,9 @@ struct ContentView: View {
                 
                 FourDotGridView()
                     .tag(1)
+
+                SixDotGridView()
+                    .tag(2)
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
