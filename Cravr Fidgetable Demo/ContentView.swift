@@ -8,14 +8,26 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var selectedTab = 0
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack {
+            Color.green.ignoresSafeArea()
+            
+            TabView(selection: $selectedTab) {
+                JoystickDiskView()
+                    .tag(0)
+                    .background(Color.green)
+                
+                FourDotGridView()
+                    .tag(1)
+                
+                PhoneRotationView()
+                    .tag(2)
+            }
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+            .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
         }
-        .padding()
     }
 }
 
