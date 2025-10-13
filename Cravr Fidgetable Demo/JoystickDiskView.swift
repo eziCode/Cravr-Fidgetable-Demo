@@ -16,9 +16,40 @@ struct JoystickDiskView: View {
     @State private var isAnimating: Bool = false
     @State private var startDiskPosition: CGPoint = .zero
     
-    private let maxDistance: CGFloat = 80
-    private let hapticThreshold: CGFloat = 5 // Much more sensitive
-    private let hapticCooldown: TimeInterval = 0.02 // Much more frequent (50x per second)
+    // Configurable properties
+    let size: CGFloat
+    let maxDistance: CGFloat
+    let hapticThreshold: CGFloat
+    let hapticCooldown: TimeInterval
+    let hapticAction: () -> Void
+    let showBackground: Bool
+    
+    // Default initializer for standalone use
+    init() {
+        self.size = 150
+        self.maxDistance = 80
+        self.hapticThreshold = 5
+        self.hapticCooldown = 0.02
+        self.hapticAction = { Haptics.shared.microHaptic() }
+        self.showBackground = true
+    }
+    
+    // Configurable initializer for use in other views
+    init(
+        size: CGFloat,
+        maxDistance: CGFloat,
+        hapticThreshold: CGFloat = 5,
+        hapticCooldown: TimeInterval = 0.02,
+        hapticAction: @escaping () -> Void = { Haptics.shared.microHaptic() },
+        showBackground: Bool = false
+    ) {
+        self.size = size
+        self.maxDistance = maxDistance
+        self.hapticThreshold = hapticThreshold
+        self.hapticCooldown = hapticCooldown
+        self.hapticAction = hapticAction
+        self.showBackground = showBackground
+    }
     
     enum Direction: CaseIterable {
         case up, down, left, right, upLeft, upRight, downLeft, downRight
@@ -30,17 +61,21 @@ struct JoystickDiskView: View {
     
     var body: some View {
         ZStack {
-            Color.green.ignoresSafeArea()
+            if showBackground {
+                Color.green.ignoresSafeArea()
+            }
             
             VStack(spacing: 40) {
                 ZStack {
-                    Circle()
-                        .fill(Color.gray.opacity(0.0))
-                        .frame(width: 200, height: 200)
+                    if showBackground {
+                        Circle()
+                            .fill(Color.gray.opacity(0.0))
+                            .frame(width: size + 50, height: size + 50)
+                    }
                     
                     Circle()
                         .fill(Color.gray)
-                        .frame(width: 150, height: 150)
+                        .frame(width: size, height: size)
                         .offset(x: diskPosition.x, y: diskPosition.y)
                         .gesture(
                             DragGesture()
@@ -117,8 +152,7 @@ struct JoystickDiskView: View {
                                  currentTime.timeIntervalSince(lastHapticTime) >= hapticCooldown
         
         if shouldTriggerHaptic {
-            // Use ultra-light haptic for more subtle feedback
-            Haptics.shared.microHaptic()
+            hapticAction()
             lastHapticDirection = direction
             lastHapticTime = currentTime
         }
