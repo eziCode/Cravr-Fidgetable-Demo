@@ -64,69 +64,28 @@ final class Haptics {
         }
     }
 
-    func selectionChanged() {
-        selection.selectionChanged()
-    }
-
-    func notify(_ type: UINotificationFeedbackGenerator.FeedbackType) {
-        notification.notificationOccurred(type)
-    }
-    
-    // Pop-it toy click
-    func popClick() {
-        impact(.light)
-    }
-    
-    // Button click variations
-    func buttonClick(intensity: Float = 0.5) {
-        if intensity < 0.3 {
-            impact(.light)
-        } else if intensity < 0.7 {
-            impact(.medium)
-        } else {
-            impact(.heavy)
+    func bubblePopHaptic() {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+        
+        let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1.0)
+        let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 1.0)
+        
+        let event = CHHapticEvent(
+            eventType: .hapticTransient,
+            parameters: [intensity, sharpness],
+            relativeTime: 0
+        )
+        
+        do {
+            let pattern = try CHHapticPattern(events: [event], parameters: [])
+            let player = try hapticEngine?.makePlayer(with: pattern)
+            try player?.start(atTime: 0)
+        } catch {
+            print("Bubble pop haptic failed: \(error)")
         }
     }
-    
-    func spinningTick() {
-        selectionChanged()
-    }
 
-    func joystickDrag() {
-        // should be in the direction that the user is dragging the disk to
-        impact(.light)
-    }
-    
-    // Directional haptic feedback for joystick - all light for consistent feel
-    func directionalHaptic(direction: JoystickDiskView.Direction) {
-        impact(.light)
-    }
-    
-    // Ultra-light haptic for more frequent feedback
-    func ultraLightHaptic() {
-        impact(.light)
-    }
-    
-    // Micro haptic - extremely light and subtle
     func microHaptic() {
-        // Use selection feedback for ultra-light feel
         selection.selectionChanged()
-    }
-    
-    // Feather-light haptic - even lighter than light
-    func featherHaptic() {
-        // Very subtle selection feedback
-        selection.selectionChanged()
-    }
-    
-    // Rotation-based haptics
-    func rotationTick(intensity: Float) {
-        if intensity < 0.3 {
-            impact(.light)
-        } else if intensity < 0.7 {
-            impact(.medium)
-        } else {
-            impact(.heavy)
-        }
     }
 }
