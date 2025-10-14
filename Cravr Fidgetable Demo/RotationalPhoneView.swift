@@ -159,23 +159,24 @@ struct RotationalPhoneView: View {
     
     private func updateRotationHaptic(speed: CGFloat) {
         // Only provide haptic feedback if rotating at noticeable speed
-        // Very low threshold (2 degrees/sec) for immediate response
-        guard speed > 2.0 else {
+        // Threshold at 8 degrees/sec for less sensitivity at start
+        guard speed > 8.0 else {
             stopRotationHaptic()
             return
         }
         
         // Map speed to haptic intensity with LINEAR scaling for consistent feel
-        // Speed range: 2-120 degrees/sec
+        // Speed range: 8-120 degrees/sec
         // Direct linear mapping so changes are immediate and proportional
-        let normalizedSpeed = min((speed - 2.0) / 118.0, 1.0)
+        let normalizedSpeed = min((speed - 8.0) / 112.0, 1.0)
         
-        // Use full intensity range with LINEAR scaling (0.3 to 1.0)
-        // 0.3 is noticeable but gentle, 1.0 is maximum
-        let hapticIntensity = Float(0.3 + (normalizedSpeed * 0.7))
+        // Use full intensity range with LINEAR scaling (0.35 to 1.0)
+        // Lower base intensity for gentler start
+        let hapticIntensity = Float(0.35 + (normalizedSpeed * 0.65))
         
-        // Heavy sharpness as requested (fixed at 0.9 for consistent heavy feel)
-        let sharpness: Float = 0.9
+        // Scale sharpness with speed for more dramatic effect (0.7 to 1.0)
+        // Slow = smoother (0.7), fast = sharper/crisper (1.0)
+        let sharpness: Float = 0.7 + (Float(normalizedSpeed) * 0.3)
         
         // If no player exists, create one
         if rotationPlayer == nil {
