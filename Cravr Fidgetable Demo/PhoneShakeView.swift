@@ -288,9 +288,11 @@ struct PhoneShakeView: View {
             // Use max of current and new to create peaks
             shakeIntensity = max(shakeIntensity, newIntensity)
             
-            // Play sound while shaking (repeat every 0.25 seconds)
+            // Play sound while shaking - speed increases with intensity
             let currentTime = Date()
-            if shakeIntensity > 0.3 && currentTime.timeIntervalSince(lastShakeSoundTime) >= 0.25 {
+            // Map intensity to sound interval: low intensity = 0.35s, high intensity = 0.08s
+            let soundInterval = 0.35 - (shakeIntensity * 0.27) // Range from 0.35s to 0.08s
+            if shakeIntensity > 0.3 && currentTime.timeIntervalSince(lastShakeSoundTime) >= soundInterval {
                 SoundManager.shared.playDing()
                 lastShakeSoundTime = currentTime
                 isPlayingShakeSound = true
