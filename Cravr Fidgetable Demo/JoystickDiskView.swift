@@ -10,6 +10,7 @@ import SwiftUI
 struct JoystickDiskView: View {
     @State private var diskPosition: CGPoint = .zero
     @State private var isDragging: Bool = false
+    @State private var isTapped: Bool = false
     @State private var lastHapticDirection: Direction? = nil
     @State private var maxResistance: CGFloat = 0.99
     @State private var lastHapticTime: Date = Date()
@@ -77,6 +78,13 @@ struct JoystickDiskView: View {
                         .fill(Color.gray)
                         .frame(width: size, height: size)
                         .offset(x: diskPosition.x, y: diskPosition.y)
+                        .onTapGesture {
+                            isTapped = true
+                            hapticAction()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                isTapped = false
+                            }
+                        }
                         .gesture(
                             DragGesture()
                                 .onChanged { value in
@@ -100,8 +108,9 @@ struct JoystickDiskView: View {
                                     returnToCenter()
                                 }
                         )
-                        .scaleEffect(isDragging ? 0.8 : 1.0)
+                        .scaleEffect(isDragging || isTapped ? 0.8 : 1.0)
                         .animation(.easeInOut(duration: 0.1), value: isDragging)
+                        .animation(.easeInOut(duration: 0.1), value: isTapped)
                 }
             }
         }
