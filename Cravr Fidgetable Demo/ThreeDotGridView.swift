@@ -126,8 +126,11 @@ struct ThreeDotGridView: View {
         // Stop continuous haptic
         Haptics.shared.stopInflationHaptic(for: dotIndex)
         
-        // Pop haptic
-        Haptics.shared.bubblePopHaptic()
+        // Big pop pulse - heavy impact + bubble pop haptic
+        Haptics.shared.impact(.heavy)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
+            Haptics.shared.bubblePopHaptic()
+        }
         
         // Make balloon disappear
         withAnimation(.easeOut(duration: 0.1)) {
