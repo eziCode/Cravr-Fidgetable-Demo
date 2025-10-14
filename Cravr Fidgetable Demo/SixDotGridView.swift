@@ -49,8 +49,6 @@ struct SixDotGridView: View {
     
     var body: some View {
         ZStack {
-            Color.cravrDarkBackground.ignoresSafeArea()
-            
             VStack(spacing: gridSpacing) {
                 ForEach(0..<rows, id: \.self) { row in
                     HStack(spacing: gridSpacing) {

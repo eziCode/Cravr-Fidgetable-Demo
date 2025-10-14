@@ -62,9 +62,6 @@ struct PhoneShakeView: View {
     
     var body: some View {
         ZStack {
-            // Dark background
-            Color.cravrDarkBackground.ignoresSafeArea()
-            
             GeometryReader { geometry in
                 let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 

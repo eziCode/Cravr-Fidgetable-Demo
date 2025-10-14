@@ -46,9 +46,6 @@ struct RotationalPhoneView: View {
     
     var body: some View {
         ZStack {
-            // Dark background
-            Color.cravrDarkBackground.ignoresSafeArea()
-            
             // Phone icon in center
             ZStack {
                 // Glow effect

@@ -34,8 +34,6 @@ struct ThreeDotGridView: View {
     
     var body: some View {
         ZStack {
-            Color.cravrDarkBackground.ignoresSafeArea()
-            
             VStack(spacing: spacing) {
                 ForEach(0..<3, id: \.self) { index in
                     if isVisible[index] {

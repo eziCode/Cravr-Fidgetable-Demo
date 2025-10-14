@@ -33,7 +33,7 @@ struct JoystickDiskView: View {
         self.hapticThreshold = 5
         self.hapticCooldown = 0.02
         self.hapticAction = { Haptics.shared.impact(.heavy) }
-        self.showBackground = true
+        self.showBackground = false
     }
     
     // Configurable initializer for use in other views

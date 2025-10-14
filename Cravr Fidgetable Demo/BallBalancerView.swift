@@ -49,8 +49,6 @@ struct BallBalancerView: View {
     
     var body: some View {
         ZStack {
-            Color.cravrDarkBackground.ignoresSafeArea()
-            
             GeometryReader { geometry in
                 let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 

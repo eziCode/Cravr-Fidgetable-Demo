@@ -37,8 +37,6 @@ struct FourDotGridView: View {
     
     var body: some View {
         ZStack {
-            Color.cravrDarkBackground.ignoresSafeArea()
-            
             ZStack {
                 ForEach(0..<4, id: \.self) { index in
                     JoystickDiskView(
