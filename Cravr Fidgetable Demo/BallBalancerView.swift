@@ -18,8 +18,14 @@ struct BallBalancerView: View {
     @State private var ballVelocity: CGPoint = .zero
     @State private var ballAcceleration: CGPoint = .zero
     
-    // Motion manager
-    @State private var motionManager: CMMotionManager?
+    // Motion manager - initialized immediately to avoid delay
+    @State private var motionManager: CMMotionManager? = {
+        let manager = CMMotionManager()
+        if manager.isDeviceMotionAvailable {
+            manager.deviceMotionUpdateInterval = 1/30.0
+        }
+        return manager
+    }()
     @State private var displayLink: Timer?
     
     // Haptic state
@@ -62,11 +68,8 @@ struct BallBalancerView: View {
             }
         }
         .onAppear {
-            // Setup asynchronously to avoid blocking the UI
-            DispatchQueue.main.async {
-                setupMotionManager()
-                startPhysicsLoop()
-            }
+            startMotionManager()
+            startPhysicsLoop()
         }
         .onDisappear {
             stopMotionManager()
@@ -76,26 +79,13 @@ struct BallBalancerView: View {
     
     // MARK: - Motion Manager Setup
     
-    private func setupMotionManager() {
-        guard motionManager == nil else { return }
-        
-        let manager = CMMotionManager()
-        
-        guard manager.isDeviceMotionAvailable else {
-            print("Device motion not available")
-            return
-        }
-        
-        manager.deviceMotionUpdateInterval = 1/30.0 // 30 Hz
-        
-        // Start updates on background queue to avoid blocking UI
+    private func startMotionManager() {
+        guard let manager = motionManager, !manager.isDeviceMotionActive else { return }
         manager.startDeviceMotionUpdates()
-        motionManager = manager
     }
     
     private func stopMotionManager() {
         motionManager?.stopDeviceMotionUpdates()
-        motionManager = nil
     }
     
     // MARK: - Physics Loop
