@@ -34,14 +34,22 @@ struct ThreeDotGridView: View {
     
     var body: some View {
         ZStack {
-            Color.green.ignoresSafeArea()
+            Color.cravrDarkBackground.ignoresSafeArea()
             
             VStack(spacing: spacing) {
                 ForEach(0..<3, id: \.self) { index in
                     if isVisible[index] {
                         Circle()
-                            .fill(colorForDot(index))
+                            .fill(
+                                RadialGradient(
+                                    gradient: Gradient(colors: [colorForDot(index), colorForDot(index).opacity(0.7)]),
+                                    center: .center,
+                                    startRadius: 0,
+                                    endRadius: (dotSize / 2) * balloonScales[index]
+                                )
+                            )
                             .frame(width: dotSize, height: dotSize)
+                            .shadow(color: colorForDot(index).opacity(0.6), radius: 15 * balloonScales[index])
                             .scaleEffect(balloonScales[index])
                             .animation(.spring(response: 0.2, dampingFraction: 0.7), value: balloonScales[index])
                             .gesture(
@@ -96,7 +104,12 @@ struct ThreeDotGridView: View {
     }
     
     private func colorForDot(_ index: Int) -> Color {
-        return .gray
+        switch index {
+        case 0: return .cravrBlue
+        case 1: return .cravrMaize
+        case 2: return .cravrPumpkin
+        default: return .cravrGreen
+        }
     }
     
     private func startInflating(dotIndex: Int) {

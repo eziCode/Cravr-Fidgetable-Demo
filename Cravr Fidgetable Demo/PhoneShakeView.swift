@@ -60,25 +60,25 @@ struct PhoneShakeView: View {
     
     var body: some View {
         ZStack {
-            // Green background
-            Color.green.ignoresSafeArea()
+            // Dark background
+            Color.cravrDarkBackground.ignoresSafeArea()
             
             GeometryReader { geometry in
                 let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 
                 // Phone icon
                 ZStack {
-                    // Shadow/glow effect
+                    // Glow effect
                     Image(systemName: "iphone.gen3")
                         .font(.system(size: phoneSize))
-                        .foregroundColor(.black.opacity(0.3))
-                        .blur(radius: 8)
+                        .foregroundColor(Color.cravrPumpkin.opacity(0.6))
+                        .blur(radius: 15)
                     
                     // Main phone icon
                     Image(systemName: "iphone.gen3")
                         .font(.system(size: phoneSize))
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.3), radius: 10)
+                        .foregroundColor(.cravrPumpkin)
+                        .shadow(color: .cravrPumpkin.opacity(0.8), radius: 12)
                 }
                 .rotationEffect(.degrees(Double(phonePosition.x / maxDistance) * 10))
                 .scaleEffect(phoneScale) // Oscillate between big and small when shaking
@@ -94,7 +94,8 @@ struct PhoneShakeView: View {
                 HStack(spacing: 4) {
                     ForEach(0..<10, id: \.self) { index in
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(shakeIntensity > CGFloat(index) / 10.0 ? Color.white : Color.white.opacity(0.2))
+                            .fill(shakeIntensity > CGFloat(index) / 10.0 ? Color.cravrGreen : Color.cravrDarkSurface)
+                            .shadow(color: shakeIntensity > CGFloat(index) / 10.0 ? Color.cravrGreen.opacity(0.5) : .clear, radius: 3)
                             .frame(width: UIScreen.main.bounds.size.width * 0.05, height: 6)
                     }
                 }

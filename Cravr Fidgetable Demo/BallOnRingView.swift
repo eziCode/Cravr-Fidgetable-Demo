@@ -36,23 +36,37 @@ struct BallOnRingView: View {
     
     var body: some View {
         ZStack {
-            Color.green.ignoresSafeArea()
+            Color.cravrDarkBackground.ignoresSafeArea()
             
             GeometryReader { geometry in
                 let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 
                 ZStack {
-                    // The ring
+                    // The ring with gradient
                     Circle()
-                        .stroke(Color.white.opacity(0.3), lineWidth: 8)
+                        .stroke(
+                            AngularGradient(
+                                gradient: Gradient(colors: [Color.cravrGreen, Color.cravrBlue, Color.cravrMaize, Color.cravrPumpkin, Color.cravrGreen]),
+                                center: .center
+                            ),
+                            lineWidth: 8
+                        )
                         .frame(width: ringRadius * 2, height: ringRadius * 2)
                         .position(center)
+                        .shadow(color: Color.cravrGreen.opacity(0.3), radius: 10)
                     
                     // The ball
                     Circle()
-                        .fill(Color.gray)
+                        .fill(
+                            RadialGradient(
+                                gradient: Gradient(colors: [Color.cravrPumpkin, Color.cravrPumpkin.opacity(0.8)]),
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: ballSize / 2
+                            )
+                        )
                         .frame(width: ballSize, height: ballSize)
-                        .shadow(color: .black.opacity(0.3), radius: 5)
+                        .shadow(color: .cravrPumpkin.opacity(0.6), radius: 10)
                         .position(ballPosition(center: center))
                         .gesture(
                             DragGesture(minimumDistance: 0)

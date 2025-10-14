@@ -37,19 +37,19 @@ struct SixDotGridView: View {
         
         var color: Color {
             switch self {
-            case .dot1: return .red
-            case .dot2: return .blue
-            case .dot3: return .brown
-            case .dot4: return .orange
-            case .dot5: return .purple
-            case .dot6: return .pink
+            case .dot1: return .cravrGreen
+            case .dot2: return .cravrBlue
+            case .dot3: return .cravrMaize
+            case .dot4: return .cravrPumpkin
+            case .dot5: return .cravrGreen
+            case .dot6: return .cravrBlue
             }
         }
     }
     
     var body: some View {
         ZStack {
-            Color.green.ignoresSafeArea()
+            Color.cravrDarkBackground.ignoresSafeArea()
             
             VStack(spacing: gridSpacing) {
                 ForEach(0..<rows, id: \.self) { row in
@@ -59,8 +59,23 @@ struct SixDotGridView: View {
                             let dot = Dot(rawValue: index)!
                             
                             Circle()
-                                .fill(toggledDots.contains(index) ? dot.color : Color.gray)
+                                .fill(
+                                    toggledDots.contains(index) ? 
+                                    RadialGradient(
+                                        gradient: Gradient(colors: [dot.color, dot.color.opacity(0.7)]),
+                                        center: .center,
+                                        startRadius: 0,
+                                        endRadius: dotSize / 2
+                                    ) :
+                                    RadialGradient(
+                                        gradient: Gradient(colors: [Color.cravrDarkSurface, Color.cravrDarkSurface]),
+                                        center: .center,
+                                        startRadius: 0,
+                                        endRadius: dotSize / 2
+                                    )
+                                )
                                 .frame(width: dotSize, height: dotSize)
+                                .shadow(color: toggledDots.contains(index) ? dot.color.opacity(0.6) : .clear, radius: 15)
                                 .scaleEffect(toggledDots.contains(index) ? 1.2 : 1.0)
                                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: toggledDots.contains(index))
                                 .onTapGesture {

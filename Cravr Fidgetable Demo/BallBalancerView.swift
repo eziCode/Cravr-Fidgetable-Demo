@@ -49,23 +49,43 @@ struct BallBalancerView: View {
     
     var body: some View {
         ZStack {
-            Color.green.ignoresSafeArea()
+            Color.cravrDarkBackground.ignoresSafeArea()
             
             GeometryReader { geometry in
                 let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 
                 ZStack {
-                    // Light green disk (stationary)
+                    // Cravr colored disk (stationary)
                     Circle()
-                        .fill(Color(red: 0.6, green: 1.0, blue: 0.6))
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.cravrGreen, Color.cravrBlue, Color.cravrMaize, Color.cravrPumpkin]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 8
+                        )
                         .frame(width: diskRadius * 2, height: diskRadius * 2)
                         .position(center)
                     
-                    // Gray ball (moves with gyroscope)
+                    // Inner glow for disk
                     Circle()
-                        .fill(Color.gray)
+                        .fill(Color.cravrDarkSurface.opacity(0.3))
+                        .frame(width: diskRadius * 2, height: diskRadius * 2)
+                        .position(center)
+                    
+                    // Maize ball (moves with gyroscope)
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                gradient: Gradient(colors: [Color.cravrMaize, Color.cravrMaize.opacity(0.8)]),
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: ballSize / 2
+                            )
+                        )
                         .frame(width: ballSize, height: ballSize)
-                        .shadow(color: .black.opacity(0.4), radius: 8)
+                        .shadow(color: .cravrMaize.opacity(0.6), radius: 12)
                         .position(
                             x: center.x + ballPosition.x,
                             y: center.y + ballPosition.y

@@ -64,19 +64,27 @@ struct JoystickDiskView: View {
     var body: some View {
         ZStack {
             if showBackground {
-                Color.green.ignoresSafeArea()
+                Color.cravrDarkBackground.ignoresSafeArea()
             }
             
             VStack(spacing: 40) {
                 ZStack {
                     if showBackground {
                         Circle()
-                            .fill(Color.gray.opacity(0.0))
+                            .fill(Color.cravrDarkSurface.opacity(0.5))
                             .frame(width: size + 50, height: size + 50)
                     }
                     
                     Circle()
-                        .fill(Color.gray)
+                        .fill(
+                            RadialGradient(
+                                gradient: Gradient(colors: [Color.cravrGreen, Color.cravrGreen.opacity(0.8)]),
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: size / 2
+                            )
+                        )
+                        .shadow(color: Color.cravrGreen.opacity(0.5), radius: 20)
                         .frame(width: size, height: size)
                         .offset(x: diskPosition.x, y: diskPosition.y)
                         .onTapGesture {

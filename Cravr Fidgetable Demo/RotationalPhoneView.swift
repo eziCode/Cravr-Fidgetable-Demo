@@ -42,22 +42,22 @@ struct RotationalPhoneView: View {
     
     var body: some View {
         ZStack {
-            // Green background
-            Color.green.ignoresSafeArea()
+            // Dark background
+            Color.cravrDarkBackground.ignoresSafeArea()
             
             // Phone icon in center
             ZStack {
-                // Shadow/glow effect
+                // Glow effect
                 Image(systemName: "iphone.gen3")
                     .font(.system(size: phoneSize))
-                    .foregroundColor(.black.opacity(0.3))
-                    .blur(radius: 10)
+                    .foregroundColor(Color.cravrBlue.opacity(0.6))
+                    .blur(radius: 20)
                 
                 // Main phone icon
                 Image(systemName: "iphone.gen3")
                     .font(.system(size: phoneSize))
-                    .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.3), radius: 10)
+                    .foregroundColor(.cravrBlue)
+                    .shadow(color: .cravrBlue.opacity(0.8), radius: 15)
             }
             .rotationEffect(.degrees(phoneRotation))
             
@@ -66,7 +66,8 @@ struct RotationalPhoneView: View {
                 HStack(spacing: 4) {
                     ForEach(0..<10, id: \.self) { index in
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(speedIntensity > CGFloat(index) / 10.0 ? Color.white : Color.white.opacity(0.2))
+                            .fill(speedIntensity > CGFloat(index) / 10.0 ? Color.cravrMaize : Color.cravrDarkSurface)
+                            .shadow(color: speedIntensity > CGFloat(index) / 10.0 ? Color.cravrMaize.opacity(0.5) : .clear, radius: 3)
                             .frame(width: UIScreen.main.bounds.size.width * 0.05, height: 6)
                     }
                 }

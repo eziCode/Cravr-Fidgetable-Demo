@@ -12,12 +12,12 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            Color.green.ignoresSafeArea()
+            Color.cravrDarkBackground.ignoresSafeArea()
             
             TabView(selection: $selectedTab) {
                 JoystickDiskView()
                     .tag(0)
-                    .background(Color.green)
+                    .background(Color.cravrDarkBackground)
                 
                 FourDotGridView()
                     .tag(1)
