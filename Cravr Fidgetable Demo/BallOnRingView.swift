@@ -25,13 +25,17 @@ struct BallOnRingView: View {
     @State private var lastDragAngle: Double = 0
     @State private var lastDragTime: Date = Date()
     @State private var lastHapticTime: Date = Date()
+    @State private var lastClickSegment: Int = -1 // Track which segment we're in for click sounds
+    
+    // Constants for clicky wheel effect
+    let clickSegments: Int = 24 // Number of "clicks" around the wheel
     
     // Animation timer
     @State private var displayLink: Timer?
     
     // Physics constants
-    let friction: Double = 0.96 // Per frame friction (slightly less than 1 to slow down)
-    let minVelocity: Double = 0.01 // Minimum velocity before stopping
+    let friction: Double = 0.985 // Per frame friction (slower deceleration for smoother slowdown)
+    let minVelocity: Double = 0.001 // Very low minimum velocity to let it click all the way down
     let hapticSpeedThreshold: Double = 0.1 // Minimum speed to trigger haptics
     
     var body: some View {
@@ -96,6 +100,7 @@ struct BallOnRingView: View {
             lastDragAngle = 0
             lastDragTime = Date()
             lastHapticTime = Date()
+            lastClickSegment = -1
         }
     }
     
@@ -176,7 +181,20 @@ struct BallOnRingView: View {
         }
         
         // Update angle
-        angle += angularVelocity / 60.0 // Divide by frame rate
+        let angleDelta = angularVelocity / 60.0 // Divide by frame rate
+        angle += angleDelta
+        
+        // Clicky wheel effect - divide ring into segments
+        let segmentAngle = (2 * .pi) / Double(clickSegments)
+        let normalizedAngle = angle.truncatingRemainder(dividingBy: 2 * .pi)
+        let positiveAngle = normalizedAngle < 0 ? normalizedAngle + 2 * .pi : normalizedAngle
+        let currentSegment = Int(positiveAngle / segmentAngle)
+        
+        // Play click sound when entering a new segment (very low threshold so it clicks all the way to stop)
+        if currentSegment != lastClickSegment && abs(angularVelocity) > 0.05 {
+            SoundManager.shared.playClick()
+            lastClickSegment = currentSegment
+        }
         
         // Normalize angle to [0, 2π]
         while angle > 2 * .pi { angle -= 2 * .pi }
