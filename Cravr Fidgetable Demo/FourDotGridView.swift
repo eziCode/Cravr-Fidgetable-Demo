@@ -27,10 +27,10 @@ struct FourDotGridView: View {
         
         var hapticStyle: () -> Void {
             switch self {
-            case .topLeft: return { Haptics.shared.microHaptic() }
-            case .topRight: return { Haptics.shared.impact(.medium) }
+            case .topLeft: return { Haptics.shared.impact(.heavy) }
+            case .topRight: return { Haptics.shared.impact(.heavy) }
             case .bottomLeft: return { Haptics.shared.bubblePopHaptic() }
-            case .bottomRight: return { Haptics.shared.impact(.light) }
+            case .bottomRight: return { Haptics.shared.impact(.heavy) }
             }
         }
     }
