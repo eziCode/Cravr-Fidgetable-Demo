@@ -30,6 +30,9 @@ struct ContentView: View {
 
                 BallOnRingView()
                     .tag(4)
+
+                BallBalancerView()
+                    .tag(5)
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
