@@ -25,6 +25,7 @@ final class Haptics {
     private var hapticEngine: CHHapticEngine?
     private var continuousPlayer: CHHapticPatternPlayer?
     private var activePlayers: [Int: CHHapticPatternPlayer] = [:]
+    private var inflationPlayers: [Int: CHHapticAdvancedPatternPlayer] = [:]
 
     private init() {
         prepareAll()
@@ -282,5 +283,75 @@ final class Haptics {
             )
         ]
         return try! CHHapticPattern(events: events, parameters: [])
+    }
+    
+    // MARK: - Inflation Haptics (for ThreeDotGridView)
+    
+    func startInflationHaptic(for dotIndex: Int) {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+        guard hapticEngine != nil else { return }
+        
+        // Stop any existing inflation haptic for this dot
+        stopInflationHaptic(for: dotIndex)
+        
+        do {
+            // Create a continuous haptic event with low initial intensity
+            let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.2)
+            let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.3)
+            
+            let event = CHHapticEvent(
+                eventType: .hapticContinuous,
+                parameters: [intensity, sharpness],
+                relativeTime: 0,
+                duration: 100 // Long duration
+            )
+            
+            let pattern = try CHHapticPattern(events: [event], parameters: [])
+            let player = try hapticEngine?.makeAdvancedPlayer(with: pattern)
+            
+            try player?.start(atTime: 0)
+            inflationPlayers[dotIndex] = player
+        } catch {
+            print("Failed to start inflation haptic for dot \(dotIndex): \(error)")
+        }
+    }
+    
+    func updateInflationHaptic(for dotIndex: Int, intensity: Float) {
+        guard let player = inflationPlayers[dotIndex] else { return }
+        
+        // Map intensity (0.0 to 1.0) to haptic parameters
+        // Start with gentle vibrations and increase frequency/intensity
+        let clampedIntensity = max(0.2, min(1.0, intensity))
+        let sharpness = 0.3 + (intensity * 0.7) // From 0.3 to 1.0
+        
+        do {
+            // Update the continuous haptic's intensity and sharpness
+            let intensityParam = CHHapticDynamicParameter(
+                parameterID: .hapticIntensityControl,
+                value: clampedIntensity,
+                relativeTime: 0
+            )
+            
+            let sharpnessParam = CHHapticDynamicParameter(
+                parameterID: .hapticSharpnessControl,
+                value: sharpness,
+                relativeTime: 0
+            )
+            
+            try player.sendParameters([intensityParam, sharpnessParam], atTime: 0)
+        } catch {
+            print("Failed to update inflation haptic for dot \(dotIndex): \(error)")
+        }
+    }
+    
+    func stopInflationHaptic(for dotIndex: Int) {
+        if let player = inflationPlayers[dotIndex] {
+            do {
+                try player.stop(atTime: 0)
+            } catch {
+                print("Failed to stop inflation haptic for dot \(dotIndex): \(error)")
+            }
+            inflationPlayers.removeValue(forKey: dotIndex)
+        }
     }
 }
