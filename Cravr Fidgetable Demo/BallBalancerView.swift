@@ -28,9 +28,9 @@ struct BallBalancerView: View {
     @State private var isAgainstWall: Bool = false
     
     // Physics constants
-    let gravity: CGFloat = 1000 // pixels per second squared
-    let friction: CGFloat = 0.997 // Damping factor
-    let wallStickiness: CGFloat = 0.85 // Friction when against wall
+    let gravity: CGFloat = 1400 // pixels per second squared
+    let friction: CGFloat = 0.998 // Damping factor
+    let wallFriction: CGFloat = 0.96 // Friction when sliding along wall
     let hapticMinInterval: TimeInterval = 0.015 // Minimum time between haptics (fast movement)
     let hapticMaxInterval: TimeInterval = 0.3 // Maximum time between haptics (slow movement)
     let wallHapticMinInterval: TimeInterval = 0.08 // Minimum time between wall hit haptics
@@ -62,9 +62,11 @@ struct BallBalancerView: View {
             }
         }
         .onAppear {
-            setupMotionManager()
-            startPhysicsLoop()
-            Haptics.shared.prepareAll()
+            // Setup asynchronously to avoid blocking the UI
+            DispatchQueue.main.async {
+                setupMotionManager()
+                startPhysicsLoop()
+            }
         }
         .onDisappear {
             stopMotionManager()
@@ -75,8 +77,9 @@ struct BallBalancerView: View {
     // MARK: - Motion Manager Setup
     
     private func setupMotionManager() {
+        guard motionManager == nil else { return }
+        
         let manager = CMMotionManager()
-        motionManager = manager
         
         guard manager.isDeviceMotionAvailable else {
             print("Device motion not available")
@@ -84,7 +87,10 @@ struct BallBalancerView: View {
         }
         
         manager.deviceMotionUpdateInterval = 1/30.0 // 30 Hz
+        
+        // Start updates on background queue to avoid blocking UI
         manager.startDeviceMotionUpdates()
+        motionManager = manager
     }
     
     private func stopMotionManager() {
@@ -143,7 +149,7 @@ struct BallBalancerView: View {
         let distance = sqrt(newPosition.x * newPosition.x + newPosition.y * newPosition.y)
         
         if distance >= maxDistance {
-            // Ball hit the wall - stick to it
+            // Ball hit the wall - constrain to boundary but allow sliding
             let angle = atan2(newPosition.y, newPosition.x)
             
             // Place ball exactly at wall boundary
@@ -152,31 +158,31 @@ struct BallBalancerView: View {
                 y: sin(angle) * maxDistance
             )
             
-            // Calculate if force is pulling away from wall
             // Normal vector at collision point (pointing inward)
             let normalX = -cos(angle)
             let normalY = -sin(angle)
             
+            // Tangent vector (perpendicular to normal, for sliding along wall)
+            let tangentX = -normalY
+            let tangentY = normalX
+            
+            // Decompose velocity into normal and tangential components
+            let velocityDotNormal = ballVelocity.x * normalX + ballVelocity.y * normalY
+            let velocityDotTangent = ballVelocity.x * tangentX + ballVelocity.y * tangentY
+            
             // Check if acceleration is pulling away from wall
             let accelDotNormal = ballAcceleration.x * normalX + ballAcceleration.y * normalY
             
-            // Require a stronger pull force to detach from wall
-            if accelDotNormal > 100 {
-                // Force is strongly pulling away from wall - allow movement
-                // Keep only velocity component that pulls away
-                let velocityDotNormal = ballVelocity.x * normalX + ballVelocity.y * normalY
-                if velocityDotNormal > 0 {
-                    ballVelocity.x = velocityDotNormal * normalX * 0.5
-                    ballVelocity.y = velocityDotNormal * normalY * 0.5
-                } else {
-                    // Zero out velocity - stick completely
-                    ballVelocity.x = 0
-                    ballVelocity.y = 0
-                }
+            // Require a moderate pull force to detach from wall
+            if accelDotNormal > 50 && velocityDotNormal > 0 {
+                // Force is pulling away from wall and velocity is outward - allow full movement
+                ballVelocity.x = velocityDotNormal * normalX * 0.8 + velocityDotTangent * tangentX * wallFriction
+                ballVelocity.y = velocityDotNormal * normalY * 0.8 + velocityDotTangent * tangentY * wallFriction
             } else {
-                // Force pushing into wall or weak pull - completely stop the ball
-                ballVelocity.x = 0
-                ballVelocity.y = 0
+                // Keep ball on wall but allow tangential sliding
+                // Zero out normal component, keep tangential component with friction
+                ballVelocity.x = velocityDotTangent * tangentX * wallFriction
+                ballVelocity.y = velocityDotTangent * tangentY * wallFriction
             }
             
             // Only trigger wall hit haptic on the initial impact (not while stuck)
