@@ -33,6 +33,8 @@ struct PhoneShakeView: View {
     @State private var shakeIntensity: CGFloat = 0.0
     @State private var lastShakeTime: Date = Date()
     @State private var phoneScale: CGFloat = 1.0
+    @State private var scaleToggle: Bool = false
+    @State private var lastScaleToggleTime: Date = Date()
     
     // Haptic engine for continuous shake feedback
     @State private var hapticEngine: CHHapticEngine?
@@ -73,12 +75,12 @@ struct PhoneShakeView: View {
                         .shadow(color: .black.opacity(0.3), radius: 10)
                 }
                 .rotationEffect(.degrees(Double(phonePosition.x / maxDistance) * 10))
-                .scaleEffect(phoneScale) // Scale up when shaking
+                .scaleEffect(phoneScale) // Oscillate between big and small when shaking
                 .position(
                     x: center.x + phonePosition.x,
                     y: center.y + phonePosition.y
                 )
-                .animation(.spring(response: 0.2, dampingFraction: 0.5), value: phoneScale)
+                .animation(.spring(response: 0.15, dampingFraction: 0.3), value: phoneScale)
             }
             
             // Shake intensity indicator (top)
@@ -214,10 +216,7 @@ struct PhoneShakeView: View {
         if shakeIntensity > 0 {
             shakeIntensity *= shakeDecayRate
             
-            // Update phone scale based on decayed intensity
-            phoneScale = 1.0 + (shakeIntensity * 0.35)
-            
-            // If intensity drops below threshold, stop haptics
+            // If intensity drops below threshold, stop haptics and reset scale
             if shakeIntensity < 0.05 {
                 shakeIntensity = 0
                 phoneScale = 1.0
@@ -260,8 +259,20 @@ struct PhoneShakeView: View {
             // Use max of current and new to create peaks
             shakeIntensity = max(shakeIntensity, newIntensity)
             
-            // Update phone scale for animation
-            phoneScale = 1.0 + (shakeIntensity * 0.35)
+            // Toggle scale for oscillating effect - alternate every 0.15 seconds
+            let currentTime = Date()
+            if currentTime.timeIntervalSince(lastScaleToggleTime) > 0.15 {
+                scaleToggle.toggle()
+                lastScaleToggleTime = currentTime
+            }
+            
+            // Oscillate between large and small based on toggle
+            // Noticeable but not extreme scale changes (0.85 to 1.35)
+            if scaleToggle {
+                phoneScale = 1.35 // Big
+            } else {
+                phoneScale = 0.85 // Small
+            }
             
             // Trigger haptic feedback based on intensity and position
             triggerShakeHaptic(intensity: shakeIntensity)
