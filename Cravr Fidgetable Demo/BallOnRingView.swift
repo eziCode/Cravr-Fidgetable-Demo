@@ -9,8 +9,14 @@ import SwiftUI
 
 struct BallOnRingView: View {
     // Ring and ball dimensions
-    let ringRadius: CGFloat = 150
-    let ballSize: CGFloat = 40
+    let ringRadius: CGFloat
+    let ballSize: CGFloat
+    
+    init() {
+        let screenWidth = UIScreen.main.bounds.size.width
+        self.ringRadius = screenWidth * 0.39 // 39% of screen width
+        self.ballSize = screenWidth * 0.10 // 10% of screen width
+    }
     
     // Ball state
     @State private var angle: Double = 0 // Current angle in radians

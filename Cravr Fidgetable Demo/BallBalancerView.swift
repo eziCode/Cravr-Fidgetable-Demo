@@ -10,8 +10,14 @@ import CoreMotion
 
 struct BallBalancerView: View {
     // Dimensions
-    let diskRadius: CGFloat = 150
-    let ballSize: CGFloat = 40
+    let diskRadius: CGFloat
+    let ballSize: CGFloat
+    
+    init() {
+        let screenWidth = UIScreen.main.bounds.size.width
+        self.diskRadius = screenWidth * 0.39 // 39% of screen width
+        self.ballSize = screenWidth * 0.10 // 10% of screen width
+    }
     
     // Ball state
     @State private var ballPosition: CGPoint = .zero

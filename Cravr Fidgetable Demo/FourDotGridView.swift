@@ -8,11 +8,19 @@
 import SwiftUI
 
 struct FourDotGridView: View {
-    private let dotSize: CGFloat = 100
-    private let gridSize: CGFloat = 240
-    private let spacing: CGFloat = 20
-    private let maxDistance: CGFloat = 30
+    private let screenWidth = UIScreen.main.bounds.size.width
+    private let dotSize: CGFloat
+    private let gridSize: CGFloat
+    private let spacing: CGFloat
+    private let maxDistance: CGFloat
     private let hapticCooldown: TimeInterval = 0.02
+    
+    init() {
+        self.dotSize = screenWidth * 0.26 // 26% of screen width
+        self.gridSize = screenWidth * 0.62 // 62% of screen width
+        self.spacing = screenWidth * 0.05 // 5% of screen width
+        self.maxDistance = screenWidth * 0.08 // 8% of screen width
+    }
     
     enum Dot: Int, CaseIterable {
         case topLeft = 0, topRight, bottomLeft, bottomRight

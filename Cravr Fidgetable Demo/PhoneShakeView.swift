@@ -11,8 +11,14 @@ import CoreHaptics
 
 struct PhoneShakeView: View {
     // Phone icon parameters
-    let phoneSize: CGFloat = 60
-    let maxDistance: CGFloat = 40 // Max distance from center - much tighter movement
+    let phoneSize: CGFloat
+    let maxDistance: CGFloat // Max distance from center - much tighter movement
+    
+    init() {
+        let screenWidth = UIScreen.main.bounds.size.width
+        self.phoneSize = screenWidth * 0.15 // 15% of screen width
+        self.maxDistance = screenWidth * 0.10 // 10% of screen width
+    }
     
     // State
     @State private var phonePosition: CGPoint = .zero
@@ -89,10 +95,10 @@ struct PhoneShakeView: View {
                     ForEach(0..<10, id: \.self) { index in
                         RoundedRectangle(cornerRadius: 2)
                             .fill(shakeIntensity > CGFloat(index) / 10.0 ? Color.white : Color.white.opacity(0.2))
-                            .frame(width: 20, height: 6)
+                            .frame(width: UIScreen.main.bounds.size.width * 0.05, height: 6)
                     }
                 }
-                .padding(.top, 60)
+                .padding(.top, UIScreen.main.bounds.size.height * 0.07)
                 Spacer()
             }
         }

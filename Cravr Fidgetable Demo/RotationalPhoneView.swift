@@ -11,7 +11,12 @@ import CoreHaptics
 
 struct RotationalPhoneView: View {
     // Phone icon parameters
-    let phoneSize: CGFloat = 80
+    let phoneSize: CGFloat
+    
+    init() {
+        let screenWidth = UIScreen.main.bounds.size.width
+        self.phoneSize = screenWidth * 0.21 // 21% of screen width
+    }
     
     // State
     @State private var phoneRotation: Double = 0.0 // Current rotation angle in degrees
@@ -62,10 +67,10 @@ struct RotationalPhoneView: View {
                     ForEach(0..<10, id: \.self) { index in
                         RoundedRectangle(cornerRadius: 2)
                             .fill(speedIntensity > CGFloat(index) / 10.0 ? Color.white : Color.white.opacity(0.2))
-                            .frame(width: 20, height: 6)
+                            .frame(width: UIScreen.main.bounds.size.width * 0.05, height: 6)
                     }
                 }
-                .padding(.top, 60)
+                .padding(.top, UIScreen.main.bounds.size.height * 0.07)
                 Spacer()
             }
         }

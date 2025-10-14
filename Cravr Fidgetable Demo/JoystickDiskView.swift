@@ -27,8 +27,9 @@ struct JoystickDiskView: View {
     
     // Default initializer for standalone use
     init() {
-        self.size = 190
-        self.maxDistance = 80
+        let screenWidth = UIScreen.main.bounds.size.width
+        self.size = screenWidth * 0.49 // 49% of screen width
+        self.maxDistance = screenWidth * 0.21 // 21% of screen width
         self.hapticThreshold = 5
         self.hapticCooldown = 0.02
         self.hapticAction = { Haptics.shared.microHaptic() }

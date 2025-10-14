@@ -8,10 +8,16 @@
 import SwiftUI
 
 struct SixDotGridView: View {
-    private let dotSize: CGFloat = 90
-    private let gridSpacing: CGFloat = 20
+    private let screenWidth = UIScreen.main.bounds.size.width
+    private let dotSize: CGFloat
+    private let gridSpacing: CGFloat
     private let rows = 3
     private let cols = 2
+    
+    init() {
+        self.dotSize = screenWidth * 0.22 // 22% of screen width
+        self.gridSpacing = screenWidth * 0.05 // 5% of screen width
+    }
     
     @State private var toggledDots: Set<Int> = []
     
