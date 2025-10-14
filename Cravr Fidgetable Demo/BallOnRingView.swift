@@ -2,7 +2,7 @@
 //  BallOnRingView.swift
 //  Cravr Fidgetable Demo
 //
-//  Created by Ezra Akresh on 10/13/25.
+//  Created by Ezra Akresh on 10/14/25.
 //
 
 import SwiftUI
@@ -24,13 +24,13 @@ struct BallOnRingView: View {
     @State private var displayLink: Timer?
     
     // Physics constants
-    let friction: Double = 0.98 // Per frame friction (slightly less than 1 to slow down)
+    let friction: Double = 0.96 // Per frame friction (slightly less than 1 to slow down)
     let minVelocity: Double = 0.01 // Minimum velocity before stopping
     let hapticSpeedThreshold: Double = 0.1 // Minimum speed to trigger haptics
     
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.green.ignoresSafeArea()
             
             GeometryReader { geometry in
                 let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
@@ -44,15 +44,9 @@ struct BallOnRingView: View {
                     
                     // The ball
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.blue, Color.cyan]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(Color.gray)
                         .frame(width: ballSize, height: ballSize)
-                        .shadow(color: .blue.opacity(0.6), radius: 10)
+                        .shadow(color: .black.opacity(0.3), radius: 5)
                         .position(ballPosition(center: center))
                         .gesture(
                             DragGesture(minimumDistance: 0)
@@ -63,8 +57,6 @@ struct BallOnRingView: View {
                                     handleDragEnd()
                                 }
                         )
-                        .scaleEffect(isDragging ? 1.1 : 1.0)
-                        .animation(.easeInOut(duration: 0.1), value: isDragging)
                 }
             }
         }
