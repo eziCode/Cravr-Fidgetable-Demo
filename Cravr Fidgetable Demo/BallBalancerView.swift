@@ -25,13 +25,15 @@ struct BallBalancerView: View {
     // Haptic state
     @State private var lastHapticTime: Date = Date()
     @State private var lastWallHitTime: Date = Date()
+    @State private var isAgainstWall: Bool = false
     
     // Physics constants
-    let gravity: CGFloat = 1200 // pixels per second squared
-    let friction: CGFloat = 0.995 // Damping factor
-    let wallBounceDamping: CGFloat = 0.6 // Energy loss on wall collision
-    let hapticMinInterval: TimeInterval = 0.05 // Minimum time between haptics
-    let wallHapticMinInterval: TimeInterval = 0.15 // Minimum time between wall hit haptics
+    let gravity: CGFloat = 1000 // pixels per second squared
+    let friction: CGFloat = 0.997 // Damping factor
+    let wallStickiness: CGFloat = 0.85 // Friction when against wall
+    let hapticMinInterval: TimeInterval = 0.015 // Minimum time between haptics (fast movement)
+    let hapticMaxInterval: TimeInterval = 0.3 // Maximum time between haptics (slow movement)
+    let wallHapticMinInterval: TimeInterval = 0.08 // Minimum time between wall hit haptics
     
     var body: some View {
         ZStack {
@@ -140,35 +142,77 @@ struct BallBalancerView: View {
         let maxDistance = diskRadius - (ballSize / 2)
         let distance = sqrt(newPosition.x * newPosition.x + newPosition.y * newPosition.y)
         
-        if distance > maxDistance {
-            // Ball hit the wall - bounce back
+        if distance >= maxDistance {
+            // Ball hit the wall - stick to it
             let angle = atan2(newPosition.y, newPosition.x)
             
-            // Place ball at wall boundary
+            // Place ball exactly at wall boundary
             newPosition = CGPoint(
                 x: cos(angle) * maxDistance,
                 y: sin(angle) * maxDistance
             )
             
-            // Calculate reflection
+            // Calculate if force is pulling away from wall
             // Normal vector at collision point (pointing inward)
             let normalX = -cos(angle)
             let normalY = -sin(angle)
             
-            // Reflect velocity
-            let dotProduct = ballVelocity.x * normalX + ballVelocity.y * normalY
-            ballVelocity.x = (ballVelocity.x - 2 * dotProduct * normalX) * wallBounceDamping
-            ballVelocity.y = (ballVelocity.y - 2 * dotProduct * normalY) * wallBounceDamping
+            // Check if acceleration is pulling away from wall
+            let accelDotNormal = ballAcceleration.x * normalX + ballAcceleration.y * normalY
             
-            // Trigger wall hit haptic
-            triggerWallHaptic(at: angle)
+            // Require a stronger pull force to detach from wall
+            if accelDotNormal > 100 {
+                // Force is strongly pulling away from wall - allow movement
+                // Keep only velocity component that pulls away
+                let velocityDotNormal = ballVelocity.x * normalX + ballVelocity.y * normalY
+                if velocityDotNormal > 0 {
+                    ballVelocity.x = velocityDotNormal * normalX * 0.5
+                    ballVelocity.y = velocityDotNormal * normalY * 0.5
+                } else {
+                    // Zero out velocity - stick completely
+                    ballVelocity.x = 0
+                    ballVelocity.y = 0
+                }
+            } else {
+                // Force pushing into wall or weak pull - completely stop the ball
+                ballVelocity.x = 0
+                ballVelocity.y = 0
+            }
+            
+            // Only trigger wall hit haptic on the initial impact (not while stuck)
+            if !isAgainstWall {
+                triggerWallHaptic(at: angle)
+                isAgainstWall = true
+            }
+        } else {
+            // Ball is not against wall
+            if isAgainstWall {
+                // Just left the wall, reset flag
+                isAgainstWall = false
+            }
         }
         
         ballPosition = newPosition
         
-        // Trigger movement haptics
-        if distance > 5 { // Only vibrate if ball has moved from center
-            triggerMovementHaptic()
+        // Trigger movement haptics only if:
+        // 1. Ball has moved from center AND
+        // 2. Ball is not stuck against wall (or if it is, acceleration is pulling away)
+        if distance > 5 {
+            if !isAgainstWall {
+                // Ball is freely moving
+                triggerMovementHaptic()
+            } else {
+                // Ball is against wall - only vibrate if pulling away
+                let angle = atan2(ballPosition.y, ballPosition.x)
+                let normalX = -cos(angle)
+                let normalY = -sin(angle)
+                let accelDotNormal = ballAcceleration.x * normalX + ballAcceleration.y * normalY
+                
+                if accelDotNormal > 50 {
+                    // Acceleration is pulling away from wall
+                    triggerMovementHaptic()
+                }
+            }
         }
     }
     
@@ -179,17 +223,34 @@ struct BallBalancerView: View {
         let acceleration = sqrt(ballAcceleration.x * ballAcceleration.x + 
                                ballAcceleration.y * ballAcceleration.y)
         
-        guard speed > 50 || acceleration > 100 else { return }
+        // Very low threshold to start haptics early
+        guard speed > 5 || acceleration > 10 else { return }
         
         let currentTime = Date()
         
-        // Map acceleration to haptic frequency
-        // Higher acceleration = more frequent haptics
-        let normalizedAcceleration = min(acceleration / 1000.0, 1.0)
-        let hapticInterval = hapticMinInterval + (1.0 - normalizedAcceleration) * 0.1
+        // Normalize speed and acceleration (0.0 to 1.0)
+        // Speed typically ranges from 0 to ~500 for moderate movement
+        let normalizedSpeed = min(speed / 400.0, 1.0)
+        // Acceleration typically ranges from 0 to ~1000
+        let normalizedAcceleration = min(acceleration / 800.0, 1.0)
+        
+        // Use the higher of the two to determine intensity
+        let intensity = max(normalizedSpeed, normalizedAcceleration)
+        
+        // Map intensity to haptic interval (inverse relationship)
+        // Low intensity (barely moving) = long interval (infrequent haptics)
+        // High intensity (fast moving) = short interval (frequent haptics)
+        let hapticInterval = hapticMaxInterval - (intensity * (hapticMaxInterval - hapticMinInterval))
         
         if currentTime.timeIntervalSince(lastHapticTime) >= hapticInterval {
-            Haptics.shared.impact(.medium)
+            // Scale haptic strength based on intensity
+            if intensity < 0.3 {
+                Haptics.shared.impact(.light) // Very gentle for slow movement
+            } else if intensity < 0.6 {
+                Haptics.shared.impact(.medium) // Medium for moderate movement
+            } else {
+                Haptics.shared.impact(.medium) // Keep medium for fast (not too overwhelming)
+            }
             lastHapticTime = currentTime
         }
     }
