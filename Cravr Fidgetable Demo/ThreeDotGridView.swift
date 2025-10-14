@@ -145,6 +145,8 @@ struct ThreeDotGridView: View {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
                 isVisible[dotIndex] = true
             }
+            // Small pop haptic when balloon reappears
+            Haptics.shared.impact(.light)
         }
     }
 }
