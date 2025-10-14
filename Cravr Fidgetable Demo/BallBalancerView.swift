@@ -67,7 +67,8 @@ struct BallBalancerView: View {
                 }
             }
         }
-        .onAppear {
+        .task {
+            // Start immediately when view appears
             startMotionManager()
             startPhysicsLoop()
         }
@@ -91,9 +92,15 @@ struct BallBalancerView: View {
     // MARK: - Physics Loop
     
     private func startPhysicsLoop() {
-        displayLink = Timer.scheduledTimer(withTimeInterval: 1/30.0, repeats: true) { _ in
+        guard displayLink == nil else { return }
+        
+        let timer = Timer(timeInterval: 1/30.0, repeats: true) { [self] _ in
             updatePhysics()
         }
+        displayLink = timer
+        
+        // Add to run loop immediately with common modes for better performance
+        RunLoop.current.add(timer, forMode: .common)
     }
     
     private func stopPhysicsLoop() {
