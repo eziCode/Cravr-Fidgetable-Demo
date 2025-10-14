@@ -91,8 +91,9 @@ struct ThreeDotGridView: View {
                 stopInflating(dotIndex: i)
             }
             
-            // Force stop all haptics
+            // Force stop all haptics and sounds
             Haptics.shared.stopAllHaptics()
+            SoundManager.shared.stopAllSounds()
             
             // Reset all state to defaults
             balloonScales = [1.0, 1.0, 1.0]
@@ -169,6 +170,7 @@ struct ThreeDotGridView: View {
         // Big pop pulse - heavy impact + bubble pop haptic (only if view is active)
         if isViewActive {
             Haptics.shared.impact(.heavy)
+            SoundManager.shared.playBubble() // Bubble pop sound
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { [self] in
                 if isViewActive {
                     Haptics.shared.bubblePopHaptic()
@@ -197,6 +199,7 @@ struct ThreeDotGridView: View {
             }
             // Small pop haptic when balloon reappears
             Haptics.shared.impact(.light)
+            SoundManager.shared.playDing() // Ding sound when reappearing
             
             // Clear the work item reference
             reappearWorkItems[dotIndex] = nil

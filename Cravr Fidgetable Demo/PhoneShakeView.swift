@@ -41,6 +41,8 @@ struct PhoneShakeView: View {
     @State private var phoneScale: CGFloat = 1.0
     @State private var scaleToggle: Bool = false
     @State private var lastScaleToggleTime: Date = Date()
+    @State private var lastShakeSoundTime: Date = Date()
+    @State private var isPlayingShakeSound: Bool = false
     
     // Haptic engine for continuous shake feedback
     @State private var hapticEngine: CHHapticEngine?
@@ -113,6 +115,7 @@ struct PhoneShakeView: View {
             stopPhysicsLoop()
             stopShakeHaptic()
             Haptics.shared.stopAllHaptics()
+            SoundManager.shared.stopAllSounds()
             
             // Reset all state to defaults
             phonePosition = .zero
@@ -121,6 +124,10 @@ struct PhoneShakeView: View {
             shakeIntensity = 0.0
             phoneScale = 1.0
             scaleToggle = false
+            lastShakeTime = Date()
+            lastScaleToggleTime = Date()
+            lastShakeSoundTime = Date()
+            isPlayingShakeSound = false
         }
     }
     
@@ -232,6 +239,12 @@ struct PhoneShakeView: View {
         if shakeIntensity > 0 {
             shakeIntensity *= shakeDecayRate
             
+            // Stop sound when intensity drops below threshold
+            if shakeIntensity < 0.3 && isPlayingShakeSound {
+                SoundManager.shared.stopAllSounds()
+                isPlayingShakeSound = false
+            }
+            
             // If intensity drops below threshold, stop haptics and reset scale
             if shakeIntensity < 0.05 {
                 shakeIntensity = 0
@@ -275,8 +288,15 @@ struct PhoneShakeView: View {
             // Use max of current and new to create peaks
             shakeIntensity = max(shakeIntensity, newIntensity)
             
-            // Toggle scale for oscillating effect - alternate every 0.15 seconds
+            // Play sound while shaking (repeat every 0.25 seconds)
             let currentTime = Date()
+            if shakeIntensity > 0.3 && currentTime.timeIntervalSince(lastShakeSoundTime) >= 0.25 {
+                SoundManager.shared.playDing()
+                lastShakeSoundTime = currentTime
+                isPlayingShakeSound = true
+            }
+            
+            // Toggle scale for oscillating effect - alternate every 0.15 seconds
             if currentTime.timeIntervalSince(lastScaleToggleTime) > 0.15 {
                 scaleToggle.toggle()
                 lastScaleToggleTime = currentTime
@@ -297,6 +317,12 @@ struct PhoneShakeView: View {
             // If no shake detected and intensity is very low, ensure haptics stop
             if shakeIntensity < 0.1 {
                 stopShakeHaptic()
+                
+                // Stop sound immediately when shaking stops
+                if isPlayingShakeSound {
+                    SoundManager.shared.stopAllSounds()
+                    isPlayingShakeSound = false
+                }
             }
         }
     }

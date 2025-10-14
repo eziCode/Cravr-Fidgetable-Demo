@@ -43,6 +43,13 @@ class SoundManager {
         }
     }
     
+    // MARK: - Audio Control
+    
+    func stopAllSounds() {
+        playerNode.stop()
+        playerNode.play()
+    }
+    
     // MARK: - Sound Effects
     
     func playClick() {

@@ -87,11 +87,15 @@ struct BallOnRingView: View {
         .onDisappear {
             stopAnimationLoop()
             Haptics.shared.stopAllHaptics()
+            SoundManager.shared.stopAllSounds()
             
             // Reset all state to defaults
             angle = 0
             angularVelocity = 0
             isDragging = false
+            lastDragAngle = 0
+            lastDragTime = Date()
+            lastHapticTime = Date()
         }
     }
     

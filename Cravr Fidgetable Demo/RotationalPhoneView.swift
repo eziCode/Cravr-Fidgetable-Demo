@@ -85,6 +85,7 @@ struct RotationalPhoneView: View {
             stopRotationLoop()
             stopRotationHaptic()
             Haptics.shared.stopAllHaptics()
+            SoundManager.shared.stopAllSounds()
             
             // Reset all state to defaults
             phoneRotation = 0.0

@@ -90,8 +90,9 @@ struct SixDotGridView: View {
             Haptics.shared.prepareAll()
         }
         .onDisappear {
-            // Immediately stop all continuous haptics
+            // Immediately stop all continuous haptics and sounds
             Haptics.shared.stopAllHaptics()
+            SoundManager.shared.stopAllSounds()
             
             // Reset state when tab changes
             toggledDots.removeAll()
@@ -102,9 +103,11 @@ struct SixDotGridView: View {
         if toggledDots.contains(index) {
             toggledDots.remove(index)
             Haptics.shared.stopContinuousHaptic(for: index)
+            SoundManager.shared.playPop() // Sound when turning off
         } else {
             toggledDots.insert(index)
             Haptics.shared.startContinuousHaptic(for: index)
+            SoundManager.shared.playClick() // Sound when turning on
         }
     }
 }

@@ -102,12 +102,15 @@ struct BallBalancerView: View {
             stopMotionManager()
             stopPhysicsLoop()
             Haptics.shared.stopAllHaptics()
+            SoundManager.shared.stopAllSounds()
             
             // Reset all state to defaults
             ballPosition = .zero
             ballVelocity = .zero
             ballAcceleration = .zero
             isAgainstWall = false
+            lastHapticTime = Date()
+            lastWallHitTime = Date()
         }
     }
     
@@ -308,6 +311,7 @@ struct BallBalancerView: View {
         
         // Trigger a stronger haptic for wall collision
         Haptics.shared.impact(.heavy)
+        SoundManager.shared.playClick() // Click sound when hitting wall
         lastWallHitTime = currentTime
     }
 }

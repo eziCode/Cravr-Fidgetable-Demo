@@ -90,6 +90,7 @@ struct JoystickDiskView: View {
                         .onTapGesture {
                             isTapped = true
                             hapticAction()
+                            SoundManager.shared.playClick() // Play click sound on tap
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 isTapped = false
                             }
@@ -127,8 +128,9 @@ struct JoystickDiskView: View {
             Haptics.shared.prepareAll()
         }
         .onDisappear {
-            // Immediately stop all haptics
+            // Immediately stop all haptics and sounds
             Haptics.shared.stopAllHaptics()
+            SoundManager.shared.stopAllSounds()
             
             // Reset state when tab changes
             isDragging = false
@@ -216,6 +218,13 @@ struct JoystickDiskView: View {
     
     private func returnToCenter() {
         isAnimating = true
+        
+        // Play pop sound when releasing
+        let distance = sqrt(diskPosition.x * diskPosition.x + diskPosition.y * diskPosition.y)
+        if distance > 10 {
+            SoundManager.shared.playPop()
+        }
+        
         withAnimation(.spring(response: 0.4, dampingFraction: 0.95, blendDuration: 0)) {
             diskPosition = .zero
         }

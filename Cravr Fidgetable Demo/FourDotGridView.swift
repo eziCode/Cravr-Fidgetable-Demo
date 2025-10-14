@@ -58,8 +58,9 @@ struct FourDotGridView: View {
             Haptics.shared.prepareAll()
         }
         .onDisappear {
-            // Immediately stop all haptics
+            // Immediately stop all haptics and sounds
             Haptics.shared.stopAllHaptics()
+            SoundManager.shared.stopAllSounds()
         }
     }
     
