@@ -105,6 +105,15 @@ struct PhoneShakeView: View {
             stopMotionManager()
             stopPhysicsLoop()
             stopShakeHaptic()
+            Haptics.shared.stopAllHaptics()
+            
+            // Reset all state to defaults
+            phonePosition = .zero
+            phoneVelocity = .zero
+            phoneAcceleration = .zero
+            shakeIntensity = 0.0
+            phoneScale = 1.0
+            scaleToggle = false
         }
     }
     

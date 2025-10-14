@@ -75,6 +75,13 @@ struct BallBalancerView: View {
         .onDisappear {
             stopMotionManager()
             stopPhysicsLoop()
+            Haptics.shared.stopAllHaptics()
+            
+            // Reset all state to defaults
+            ballPosition = .zero
+            ballVelocity = .zero
+            ballAcceleration = .zero
+            isAgainstWall = false
         }
     }
     

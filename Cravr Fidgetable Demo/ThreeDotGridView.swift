@@ -23,6 +23,8 @@ struct ThreeDotGridView: View {
     @State private var isPressed: [Bool] = [false, false, false] // Which dots are being held
     @State private var isVisible: [Bool] = [true, true, true] // Which dots are visible (for pop animation)
     @State private var inflationTimers: [Timer?] = [nil, nil, nil]
+    @State private var reappearWorkItems: [DispatchWorkItem?] = [nil, nil, nil] // Track scheduled reappear tasks
+    @State private var isViewActive: Bool = true // Track if view is active
     
     var body: some View {
         ZStack {
@@ -58,13 +60,32 @@ struct ThreeDotGridView: View {
             }
         }
         .onAppear {
+            isViewActive = true
             Haptics.shared.prepareAll()
         }
         .onDisappear {
-            // Clean up all timers and haptics
+            isViewActive = false
+            
+            // Cancel all scheduled reappear tasks
+            for i in 0..<3 {
+                reappearWorkItems[i]?.cancel()
+                reappearWorkItems[i] = nil
+            }
+            
+            // Clean up all timers and haptics immediately
             for i in 0..<3 {
                 stopInflating(dotIndex: i)
             }
+            
+            // Force stop all haptics
+            Haptics.shared.stopAllHaptics()
+            
+            // Reset all state to defaults
+            balloonScales = [1.0, 1.0, 1.0]
+            isPressed = [false, false, false]
+            isVisible = [true, true, true]
+            inflationTimers = [nil, nil, nil]
+            reappearWorkItems = [nil, nil, nil]
         }
     }
     
@@ -126,10 +147,14 @@ struct ThreeDotGridView: View {
         // Stop continuous haptic
         Haptics.shared.stopInflationHaptic(for: dotIndex)
         
-        // Big pop pulse - heavy impact + bubble pop haptic
-        Haptics.shared.impact(.heavy)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
-            Haptics.shared.bubblePopHaptic()
+        // Big pop pulse - heavy impact + bubble pop haptic (only if view is active)
+        if isViewActive {
+            Haptics.shared.impact(.heavy)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { [self] in
+                if isViewActive {
+                    Haptics.shared.bubblePopHaptic()
+                }
+            }
         }
         
         // Make balloon disappear
@@ -140,14 +165,26 @@ struct ThreeDotGridView: View {
         // Reset scale
         balloonScales[dotIndex] = 1.0
         
-        // Reappear after ~1 second
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        // Cancel any existing reappear work item for this dot
+        reappearWorkItems[dotIndex]?.cancel()
+        
+        // Create new work item for reappearing
+        let workItem = DispatchWorkItem { [self] in
+            // Only reappear and trigger haptic if view is still active
+            guard isViewActive else { return }
+            
             withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
                 isVisible[dotIndex] = true
             }
             // Small pop haptic when balloon reappears
             Haptics.shared.impact(.light)
+            
+            // Clear the work item reference
+            reappearWorkItems[dotIndex] = nil
         }
+        
+        reappearWorkItems[dotIndex] = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
     }
 }
 

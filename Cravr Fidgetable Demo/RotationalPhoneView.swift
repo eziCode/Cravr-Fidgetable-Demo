@@ -78,6 +78,13 @@ struct RotationalPhoneView: View {
             stopMotionManager()
             stopRotationLoop()
             stopRotationHaptic()
+            Haptics.shared.stopAllHaptics()
+            
+            // Reset all state to defaults
+            phoneRotation = 0.0
+            lastRotation = 0.0
+            rotationSpeed = 0.0
+            speedIntensity = 0.0
         }
     }
     

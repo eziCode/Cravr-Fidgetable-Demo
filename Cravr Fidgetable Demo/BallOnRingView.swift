@@ -66,6 +66,12 @@ struct BallOnRingView: View {
         }
         .onDisappear {
             stopAnimationLoop()
+            Haptics.shared.stopAllHaptics()
+            
+            // Reset all state to defaults
+            angle = 0
+            angularVelocity = 0
+            isDragging = false
         }
     }
     

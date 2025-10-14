@@ -358,4 +358,29 @@ final class Haptics {
             inflationPlayers.removeValue(forKey: dotIndex)
         }
     }
+    
+    // MARK: - Stop All Haptics
+    
+    /// Stops all active haptic players (continuous haptics and inflation haptics)
+    func stopAllHaptics() {
+        // Stop all continuous haptic players
+        for (index, player) in activePlayers {
+            do {
+                try player.stop(atTime: 0)
+            } catch {
+                print("Failed to stop haptic for dot \(index): \(error)")
+            }
+        }
+        activePlayers.removeAll()
+        
+        // Stop all inflation haptic players
+        for (index, player) in inflationPlayers {
+            do {
+                try player.stop(atTime: 0)
+            } catch {
+                print("Failed to stop inflation haptic for dot \(index): \(error)")
+            }
+        }
+        inflationPlayers.removeAll()
+    }
 }

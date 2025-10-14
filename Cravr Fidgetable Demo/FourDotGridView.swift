@@ -49,6 +49,10 @@ struct FourDotGridView: View {
         .onAppear {
             Haptics.shared.prepareAll()
         }
+        .onDisappear {
+            // Immediately stop all haptics
+            Haptics.shared.stopAllHaptics()
+        }
     }
     
     // MARK: - Center positions of the 2x2 grid

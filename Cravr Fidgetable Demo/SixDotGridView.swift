@@ -68,6 +68,13 @@ struct SixDotGridView: View {
         .onAppear {
             Haptics.shared.prepareAll()
         }
+        .onDisappear {
+            // Immediately stop all continuous haptics
+            Haptics.shared.stopAllHaptics()
+            
+            // Reset state when tab changes
+            toggledDots.removeAll()
+        }
     }
     
     private func toggleDot(index: Int, dot: Dot) {

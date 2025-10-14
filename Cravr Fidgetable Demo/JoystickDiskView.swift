@@ -117,6 +117,18 @@ struct JoystickDiskView: View {
         .onAppear {
             Haptics.shared.prepareAll()
         }
+        .onDisappear {
+            // Immediately stop all haptics
+            Haptics.shared.stopAllHaptics()
+            
+            // Reset state when tab changes
+            isDragging = false
+            isTapped = false
+            isAnimating = false
+            diskPosition = .zero
+            startDiskPosition = .zero
+            lastHapticDirection = nil
+        }
     }
     
     private func updateDiskPosition(toward target: CGPoint) {
