@@ -160,8 +160,13 @@ struct RotationalPhoneView: View {
         rotationSpeed = abs(CGFloat(rotationRate.z) * (180.0 / .pi))
         
         // Update speed intensity for visualization (0-1 range)
-        // Map speed to intensity: 0-360 degrees/sec -> 0-1
-        speedIntensity = min(rotationSpeed / 360.0, 1.0)
+        // Only show bars when speed is above threshold (8 degrees/sec) to match haptic behavior
+        if rotationSpeed > 8.0 {
+            // Map speed from 8-360 degrees/sec -> 0-1
+            speedIntensity = min((rotationSpeed - 8.0) / 352.0, 1.0)
+        } else {
+            speedIntensity = 0.0
+        }
         
         // Trigger haptic feedback based on rotation speed
         updateRotationHaptic(speed: rotationSpeed)

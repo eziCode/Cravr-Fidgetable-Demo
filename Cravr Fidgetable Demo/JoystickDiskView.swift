@@ -32,7 +32,7 @@ struct JoystickDiskView: View {
         self.maxDistance = screenWidth * 0.21 // 21% of screen width
         self.hapticThreshold = 5
         self.hapticCooldown = 0.02
-        self.hapticAction = { Haptics.shared.microHaptic() }
+        self.hapticAction = { Haptics.shared.impact(.heavy) }
         self.showBackground = true
     }
     
@@ -42,7 +42,7 @@ struct JoystickDiskView: View {
         maxDistance: CGFloat,
         hapticThreshold: CGFloat = 5,
         hapticCooldown: TimeInterval = 0.02,
-        hapticAction: @escaping () -> Void = { Haptics.shared.microHaptic() },
+        hapticAction: @escaping () -> Void = { Haptics.shared.impact(.heavy) },
         showBackground: Bool = false
     ) {
         self.size = size
