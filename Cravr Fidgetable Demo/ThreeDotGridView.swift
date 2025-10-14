@@ -8,16 +8,16 @@
 import SwiftUI
 
 struct ThreeDotGridView: View {
-    private let dotSize: CGFloat = 80
+    private let dotSize: CGFloat = 100
     private let spacing: CGFloat = 40
     private let inflationRate: CGFloat = 0.012 // How fast the balloon inflates per tick
     
     // Calculate max scale based on spacing to prevent overlap
-    // Center-to-center distance is dotSize + spacing = 120
-    // Max radius = 60 (half of center-to-center)
-    // Current radius = 40 (half of dotSize)
-    // Max scale = 60/40 = 1.5
-    private let maxBalloonScale: CGFloat = 1.5
+    // Center-to-center distance is dotSize + spacing = 140
+    // Max radius = 70 (half of center-to-center)
+    // Current radius = 50 (half of dotSize)
+    // Max scale = 70/50 = 1.4
+    private let maxBalloonScale: CGFloat = 1.4
     
     @State private var balloonScales: [CGFloat] = [1.0, 1.0, 1.0] // Scale for each of the 3 dots
     @State private var isPressed: [Bool] = [false, false, false] // Which dots are being held

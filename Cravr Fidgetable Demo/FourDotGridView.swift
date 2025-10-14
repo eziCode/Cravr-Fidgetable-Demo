@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct FourDotGridView: View {
-    private let dotSize: CGFloat = 80
-    private let gridSize: CGFloat = 200
+    private let dotSize: CGFloat = 100
+    private let gridSize: CGFloat = 240
     private let spacing: CGFloat = 20
     private let maxDistance: CGFloat = 30
     private let hapticCooldown: TimeInterval = 0.02

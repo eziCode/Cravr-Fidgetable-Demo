@@ -27,7 +27,7 @@ struct JoystickDiskView: View {
     
     // Default initializer for standalone use
     init() {
-        self.size = 150
+        self.size = 190
         self.maxDistance = 80
         self.hapticThreshold = 5
         self.hapticCooldown = 0.02

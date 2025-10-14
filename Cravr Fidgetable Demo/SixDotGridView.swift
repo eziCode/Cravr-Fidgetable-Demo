@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SixDotGridView: View {
-    private let dotSize: CGFloat = 70
+    private let dotSize: CGFloat = 90
     private let gridSpacing: CGFloat = 20
     private let rows = 3
     private let cols = 2
