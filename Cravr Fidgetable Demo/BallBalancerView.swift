@@ -202,20 +202,28 @@ struct BallBalancerView: View {
         
         // Trigger movement haptics only if:
         // 1. Ball has moved from center AND
-        // 2. Ball is not stuck against wall (or if it is, acceleration is pulling away)
+        // 2. Ball is moving (either freely or sliding along wall)
         if distance > 5 {
             if !isAgainstWall {
                 // Ball is freely moving
                 triggerMovementHaptic()
             } else {
-                // Ball is against wall - only vibrate if pulling away
+                // Ball is against wall - vibrate if sliding along wall or pulling away
                 let angle = atan2(ballPosition.y, ballPosition.x)
                 let normalX = -cos(angle)
                 let normalY = -sin(angle)
+                let tangentX = -normalY
+                let tangentY = normalX
+                
+                // Check tangential velocity (sliding along wall)
+                let velocityDotTangent = ballVelocity.x * tangentX + ballVelocity.y * tangentY
+                let tangentialSpeed = abs(velocityDotTangent)
+                
+                // Check acceleration pulling away
                 let accelDotNormal = ballAcceleration.x * normalX + ballAcceleration.y * normalY
                 
-                if accelDotNormal > 50 {
-                    // Acceleration is pulling away from wall
+                // Trigger if sliding along wall with speed OR pulling away
+                if tangentialSpeed > 10 || accelDotNormal > 50 {
                     triggerMovementHaptic()
                 }
             }
