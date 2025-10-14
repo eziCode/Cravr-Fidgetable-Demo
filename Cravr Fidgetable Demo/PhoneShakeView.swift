@@ -12,7 +12,7 @@ import CoreHaptics
 struct PhoneShakeView: View {
     // Phone icon parameters
     let phoneSize: CGFloat = 60
-    let maxDistance: CGFloat = 120 // Max distance from center before strong deceleration
+    let maxDistance: CGFloat = 40 // Max distance from center - much tighter movement
     
     // State
     @State private var phonePosition: CGPoint = .zero
@@ -32,17 +32,23 @@ struct PhoneShakeView: View {
     // Shake detection
     @State private var shakeIntensity: CGFloat = 0.0
     @State private var lastShakeTime: Date = Date()
+    @State private var phoneScale: CGFloat = 1.0
     
     // Haptic engine for continuous shake feedback
     @State private var hapticEngine: CHHapticEngine?
     @State private var shakePlayer: CHHapticAdvancedPatternPlayer?
     
     // Physics constants
-    let gravity: CGFloat = 1200 // pixels per second squared
-    let friction: CGFloat = 0.995 // Damping factor
-    let boundaryStiffness: CGFloat = 0.5 // How strongly to push back from boundary
+    let gravity: CGFloat = 400 // pixels per second squared - much lower for subtle movement
+    let friction: CGFloat = 0.92 // Damping factor - higher friction for less bouncing
+    let boundaryStiffness: CGFloat = 1.5 // How strongly to push back from boundary
     let shakeThreshold: CGFloat = 1.2 // Acceleration threshold for shake detection (lower = more sensitive)
     let shakeDecayRate: CGFloat = 0.85 // How fast shake intensity decays
+    
+    // Per-axis intensity multipliers for haptics
+    let xAxisIntensityMultiplier: CGFloat = 3.0 // Boost X-axis shake detection
+    let yAxisIntensityMultiplier: CGFloat = 3.0 // Boost Y-axis shake detection
+    let zAxisIntensityMultiplier: CGFloat = 1.0 // Z-axis is already strong
     
     var body: some View {
         ZStack {
@@ -66,11 +72,13 @@ struct PhoneShakeView: View {
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.3), radius: 10)
                 }
+                .rotationEffect(.degrees(Double(phonePosition.x / maxDistance) * 10))
+                .scaleEffect(phoneScale) // Scale up when shaking
                 .position(
                     x: center.x + phonePosition.x,
                     y: center.y + phonePosition.y
                 )
-                .rotationEffect(.degrees(Double(phonePosition.x / maxDistance) * 15))
+                .animation(.spring(response: 0.2, dampingFraction: 0.5), value: phoneScale)
             }
             
             // Shake intensity indicator (top)
@@ -162,13 +170,13 @@ struct PhoneShakeView: View {
             // Using a smooth function that creates deceleration without hard stops
             let normalizedDist = distance / maxDistance
             
-            // Start applying resistance much earlier (at 30% of max distance)
-            // This ensures the phone never gets close to the actual boundary
-            if normalizedDist > 0.3 {
+            // Start applying resistance very early (at 20% of max distance)
+            // This keeps movement very tight and controlled
+            if normalizedDist > 0.2 {
                 // Exponential resistance that grows stronger as we approach boundary
                 // Using a higher power for stronger resistance
-                let adjustedDist = (normalizedDist - 0.3) / 0.7 // Normalize to 0-1 range
-                let resistanceFactor = pow(adjustedDist, 4) // Quartic for very smooth but strong resistance
+                let adjustedDist = (normalizedDist - 0.2) / 0.8 // Normalize to 0-1 range
+                let resistanceFactor = pow(adjustedDist, 5) // Quintic for extremely smooth but very strong resistance
                 let boundaryForceX = -(phonePosition.x / distance) * resistanceFactor * gravity * boundaryStiffness
                 let boundaryForceY = -(phonePosition.y / distance) * resistanceFactor * gravity * boundaryStiffness
                 
@@ -206,9 +214,13 @@ struct PhoneShakeView: View {
         if shakeIntensity > 0 {
             shakeIntensity *= shakeDecayRate
             
+            // Update phone scale based on decayed intensity
+            phoneScale = 1.0 + (shakeIntensity * 0.35)
+            
             // If intensity drops below threshold, stop haptics
             if shakeIntensity < 0.05 {
                 shakeIntensity = 0
+                phoneScale = 1.0
                 stopShakeHaptic()
             }
         }
@@ -220,15 +232,20 @@ struct PhoneShakeView: View {
         // Use user acceleration (removes gravity) to detect sudden movements on ALL axes
         let userAccel = motion.userAcceleration
         
-        // Calculate total acceleration magnitude from all three axes
+        // Apply per-axis multipliers to balance sensitivity
+        let adjustedX = abs(userAccel.x) * xAxisIntensityMultiplier
+        let adjustedY = abs(userAccel.y) * yAxisIntensityMultiplier
+        let adjustedZ = abs(userAccel.z) * zAxisIntensityMultiplier
+        
+        // Calculate total acceleration magnitude with adjusted values
         let accelMagnitude = sqrt(
-            userAccel.x * userAccel.x +
-            userAccel.y * userAccel.y +
-            userAccel.z * userAccel.z
+            adjustedX * adjustedX +
+            adjustedY * adjustedY +
+            adjustedZ * adjustedZ
         )
         
-        // Also check individual axes to ensure we catch shakes on any single axis
-        let maxAxisAccel = max(abs(userAccel.x), abs(userAccel.y), abs(userAccel.z))
+        // Also check individual adjusted axes
+        let maxAxisAccel = max(adjustedX, adjustedY, adjustedZ)
         
         // Use whichever is stronger: total magnitude or single axis
         let effectiveAccel = max(accelMagnitude, maxAxisAccel)
@@ -242,6 +259,9 @@ struct PhoneShakeView: View {
             
             // Use max of current and new to create peaks
             shakeIntensity = max(shakeIntensity, newIntensity)
+            
+            // Update phone scale for animation
+            phoneScale = 1.0 + (shakeIntensity * 0.35)
             
             // Trigger haptic feedback based on intensity and position
             triggerShakeHaptic(intensity: shakeIntensity)
@@ -269,11 +289,11 @@ struct PhoneShakeView: View {
         // Haptic varies based on:
         // 1. Shake intensity (main factor)
         // 2. Distance from center (further from center = stronger haptics)
-        let positionMultiplier = 0.5 + (normalizedDist * 0.5) // Range: 0.5 to 1.0
-        let hapticIntensity = Float(intensity * positionMultiplier)
+        let positionMultiplier = 0.8 + (normalizedDist * 0.2) // Range: 0.8 to 1.0 (much stronger base)
+        let hapticIntensity = Float(min(intensity * positionMultiplier * 1.5, 1.0)) // Boost intensity by 1.5x, cap at 1.0
         
         // Sharpness increases with intensity for more "crisp" feel at high intensity
-        let sharpness = Float(0.3 + (intensity * 0.7)) // Range: 0.3 to 1.0
+        let sharpness = Float(0.6 + (intensity * 0.4)) // Range: 0.6 to 1.0 (sharper for more intense feel)
         
         updateContinuousShakeHaptic(intensity: hapticIntensity, sharpness: sharpness)
     }
