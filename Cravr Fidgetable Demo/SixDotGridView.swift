@@ -66,14 +66,18 @@ struct SixDotGridView: View {
                                         endRadius: dotSize / 2
                                     ) :
                                     RadialGradient(
-                                        gradient: Gradient(colors: [Color.cravrDarkSurface, Color.cravrDarkSurface]),
+                                        gradient: Gradient(colors: [Color.white.opacity(0.15), Color.white.opacity(0.08)]),
                                         center: .center,
                                         startRadius: 0,
                                         endRadius: dotSize / 2
                                     )
                                 )
+                                .overlay(
+                                    Circle()
+                                        .stroke(toggledDots.contains(index) ? Color.clear : Color.white.opacity(0.3), lineWidth: 2)
+                                )
                                 .frame(width: dotSize, height: dotSize)
-                                .shadow(color: toggledDots.contains(index) ? dot.color.opacity(0.6) : .clear, radius: 15)
+                                .shadow(color: toggledDots.contains(index) ? dot.color.opacity(0.6) : Color.white.opacity(0.2), radius: toggledDots.contains(index) ? 15 : 5)
                                 .scaleEffect(toggledDots.contains(index) ? 1.2 : 1.0)
                                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: toggledDots.contains(index))
                                 .onTapGesture {
