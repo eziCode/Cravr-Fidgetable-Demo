@@ -9,9 +9,15 @@ import SwiftUI
 
 struct ThreeDotGridView: View {
     private let dotSize: CGFloat = 80
-    private let maxBalloonScale: CGFloat = 3.5
     private let spacing: CGFloat = 40
-    private let inflationRate: CGFloat = 0.015 // How fast the balloon inflates per tick
+    private let inflationRate: CGFloat = 0.012 // How fast the balloon inflates per tick
+    
+    // Calculate max scale based on spacing to prevent overlap
+    // Center-to-center distance is dotSize + spacing = 120
+    // Max radius = 60 (half of center-to-center)
+    // Current radius = 40 (half of dotSize)
+    // Max scale = 60/40 = 1.5
+    private let maxBalloonScale: CGFloat = 1.5
     
     @State private var balloonScales: [CGFloat] = [1.0, 1.0, 1.0] // Scale for each of the 3 dots
     @State private var isPressed: [Bool] = [false, false, false] // Which dots are being held
@@ -63,16 +69,18 @@ struct ThreeDotGridView: View {
     }
     
     private func colorForDot(_ index: Int) -> Color {
-        switch index {
-        case 0: return .red
-        case 1: return .blue
-        case 2: return .purple
-        default: return .gray
-        }
+        return .gray
     }
     
     private func startInflating(dotIndex: Int) {
         isPressed[dotIndex] = true
+        
+        // Start continuous haptic immediately
+        Haptics.shared.startInflationHaptic(for: dotIndex)
+        
+        // Set initial low intensity
+        let initialProgress = (balloonScales[dotIndex] - 1.0) / (maxBalloonScale - 1.0)
+        Haptics.shared.updateInflationHaptic(for: dotIndex, intensity: Float(initialProgress))
         
         // Start the inflation timer
         inflationTimers[dotIndex] = Timer.scheduledTimer(withTimeInterval: 0.033, repeats: true) { timer in
@@ -84,18 +92,15 @@ struct ThreeDotGridView: View {
             // Inflate the balloon
             balloonScales[dotIndex] += inflationRate
             
-            // Update haptic intensity based on inflation
+            // Update haptic intensity based on inflation progress
             let progress = (balloonScales[dotIndex] - 1.0) / (maxBalloonScale - 1.0)
             Haptics.shared.updateInflationHaptic(for: dotIndex, intensity: Float(progress))
             
-            // Check if balloon should pop
+            // Check if balloon should pop (hit boundary)
             if balloonScales[dotIndex] >= maxBalloonScale {
                 popBalloon(dotIndex: dotIndex)
             }
         }
-        
-        // Start continuous haptic
-        Haptics.shared.startInflationHaptic(for: dotIndex)
     }
     
     private func stopInflating(dotIndex: Int) {

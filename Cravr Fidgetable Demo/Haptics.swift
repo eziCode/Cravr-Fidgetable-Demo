@@ -295,9 +295,9 @@ final class Haptics {
         stopInflationHaptic(for: dotIndex)
         
         do {
-            // Create a continuous haptic event with low initial intensity
-            let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.2)
-            let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.3)
+            // Create a continuous haptic event with low initial intensity that user can feel
+            let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.3)
+            let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.2)
             
             let event = CHHapticEvent(
                 eventType: .hapticContinuous,
@@ -320,9 +320,13 @@ final class Haptics {
         guard let player = inflationPlayers[dotIndex] else { return }
         
         // Map intensity (0.0 to 1.0) to haptic parameters
-        // Start with gentle vibrations and increase frequency/intensity
-        let clampedIntensity = max(0.2, min(1.0, intensity))
-        let sharpness = 0.3 + (intensity * 0.7) // From 0.3 to 1.0
+        // Start with noticeable vibrations and scale up to maximum
+        // Intensity range: 0.3 to 1.0 (start noticeable, end at max)
+        let scaledIntensity = 0.3 + (intensity * 0.7) // From 0.3 to 1.0
+        let clampedIntensity = max(0.3, min(1.0, scaledIntensity))
+        
+        // Sharpness also increases as balloon inflates (0.2 to 1.0)
+        let sharpness = 0.2 + (intensity * 0.8) // From 0.2 to 1.0
         
         do {
             // Update the continuous haptic's intensity and sharpness
