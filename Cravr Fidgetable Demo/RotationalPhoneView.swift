@@ -40,6 +40,10 @@ struct RotationalPhoneView: View {
     // Speed visualization
     @State private var speedIntensity: CGFloat = 0.0
     
+    // Sound tracking
+    @State private var lastRotationSoundTime: Date = Date()
+    @State private var isPlayingRotationSound: Bool = false
+    
     var body: some View {
         ZStack {
             // Dark background
@@ -92,6 +96,8 @@ struct RotationalPhoneView: View {
             lastRotation = 0.0
             rotationSpeed = 0.0
             speedIntensity = 0.0
+            lastRotationSoundTime = Date()
+            isPlayingRotationSound = false
         }
     }
     
@@ -170,6 +176,27 @@ struct RotationalPhoneView: View {
             speedIntensity = 0.0
         }
         
+        // Play sound while rotating - speed increases with rotation speed
+        let currentTime = Date()
+        if rotationSpeed > 15.0 {
+            // Normalize speed to 0-1 range (15 deg/s to 120 deg/s)
+            let normalizedSpeed = min((rotationSpeed - 15.0) / 105.0, 1.0)
+            // Map speed to sound interval: slow = 0.4s, fast = 0.1s
+            let soundInterval = 0.4 - (normalizedSpeed * 0.3)
+            
+            if currentTime.timeIntervalSince(lastRotationSoundTime) >= soundInterval {
+                SoundManager.shared.playBubble()
+                lastRotationSoundTime = currentTime
+                isPlayingRotationSound = true
+            }
+        } else {
+            // Stop sound when rotation is too slow
+            if isPlayingRotationSound {
+                SoundManager.shared.stopAllSounds()
+                isPlayingRotationSound = false
+            }
+        }
+        
         // Trigger haptic feedback based on rotation speed
         updateRotationHaptic(speed: rotationSpeed)
     }
@@ -181,6 +208,12 @@ struct RotationalPhoneView: View {
         // Threshold at 8 degrees/sec for less sensitivity at start
         guard speed > 8.0 else {
             stopRotationHaptic()
+            
+            // Stop sound when rotation stops
+            if isPlayingRotationSound {
+                SoundManager.shared.stopAllSounds()
+                isPlayingRotationSound = false
+            }
             return
         }
         
