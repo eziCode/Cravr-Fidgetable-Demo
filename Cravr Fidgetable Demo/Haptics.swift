@@ -200,7 +200,7 @@ final class Haptics {
             CHHapticEvent(
                 eventType: .hapticContinuous,
                 parameters: [
-                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.4),
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.7),
                     CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.6)
                 ],
                 relativeTime: 0,
@@ -215,7 +215,7 @@ final class Haptics {
             CHHapticEvent(
                 eventType: .hapticContinuous,
                 parameters: [
-                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.9),
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 1.0),
                     CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.8)
                 ],
                 relativeTime: 0,
@@ -230,7 +230,7 @@ final class Haptics {
             CHHapticEvent(
                 eventType: .hapticContinuous,
                 parameters: [
-                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.5),
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.8),
                     CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.7)
                 ],
                 relativeTime: 0,
@@ -245,7 +245,7 @@ final class Haptics {
             CHHapticEvent(
                 eventType: .hapticContinuous,
                 parameters: [
-                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.6),
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.9),
                     CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5)
                 ],
                 relativeTime: 0,
@@ -260,7 +260,7 @@ final class Haptics {
             CHHapticEvent(
                 eventType: .hapticContinuous,
                 parameters: [
-                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.4),
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.7),
                     CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.6)
                 ],
                 relativeTime: 0,
@@ -275,7 +275,7 @@ final class Haptics {
             CHHapticEvent(
                 eventType: .hapticContinuous,
                 parameters: [
-                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.3),
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.6),
                     CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.8)
                 ],
                 relativeTime: 0,
@@ -296,7 +296,7 @@ final class Haptics {
         
         do {
             // Create a continuous haptic event with low initial intensity that user can feel
-            let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.3)
+            let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.6)
             let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.2)
             
             let event = CHHapticEvent(
@@ -321,9 +321,9 @@ final class Haptics {
         
         // Map intensity (0.0 to 1.0) to haptic parameters
         // Start with noticeable vibrations and scale up to maximum
-        // Intensity range: 0.3 to 1.0 (start noticeable, end at max)
-        let scaledIntensity = 0.3 + (intensity * 0.7) // From 0.3 to 1.0
-        let clampedIntensity = max(0.3, min(1.0, scaledIntensity))
+        // Intensity range: 0.6 to 1.0 (start noticeable, end at max)
+        let scaledIntensity = 0.6 + (intensity * 0.4) // From 0.6 to 1.0
+        let clampedIntensity = max(0.6, min(1.0, scaledIntensity))
         
         // Sharpness also increases as balloon inflates (0.2 to 1.0)
         let sharpness = 0.2 + (intensity * 0.8) // From 0.2 to 1.0
