@@ -36,6 +36,9 @@ struct ContentView: View {
 
                 PhoneShakeView()
                     .tag(6)
+
+                RotationalPhoneView()
+                    .tag(7)
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
             .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
